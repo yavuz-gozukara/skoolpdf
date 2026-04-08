@@ -1,0 +1,25 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+backend/venv/
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+build/
+
+# ── Runtime uploads (processed files — never commit) ──────────────────────────
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ── Environment variables ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+._*
+Thumbs.db
+*.log
+npm-debug.log*
+.claude/
+PROJECT_HANDOVER.md

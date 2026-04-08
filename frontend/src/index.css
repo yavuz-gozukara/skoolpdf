@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* ─── Class-based dark mode (toggle via .dark on <html>) ─────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", "Outfit", system-ui, -apple-system, sans-serif;
+
+  /* ── Brand: Violet (premium SaaS) ── */
+  --color-brand-50:  #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+
+  /* ── Accent: Cyan ── */
+  --color-accent-50:  #ecfeff;
+  --color-accent-100: #cffafe;
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+
+  --color-background-light: #f8fafc;
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────────────── */
+:root {
+  font-family: var(--font-sans);
+  background-color: var(--color-background-light);
+  color: #0f172a;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* ─── Dark mode base ─────────────────────────────────────────────────────────── */
+.dark {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* ─── Mesh background ────────────────────────────────────────────────────────── */
+.bg-mesh {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(at 10% 0%,  hsla(270, 80%, 94%, 0.6) 0px, transparent 55%),
+    radial-gradient(at 90% 10%, hsla(190, 80%, 92%, 0.5) 0px, transparent 55%),
+    radial-gradient(at 50% 100%,hsla(250, 80%, 94%, 0.4) 0px, transparent 55%);
+}
+
+.dark .bg-mesh {
+  background-color: #0f172a;
+  background-image:
+    radial-gradient(at 10% 0%,  hsla(270, 60%, 15%, 0.5) 0px, transparent 55%),
+    radial-gradient(at 90% 10%, hsla(190, 60%, 12%, 0.4) 0px, transparent 55%),
+    radial-gradient(at 50% 100%,hsla(250, 60%, 15%, 0.3) 0px, transparent 55%);
+}
+
+/* ─── Hero drop zone dashed border animation ─────────────────────────────────── */
+@keyframes dash-move {
+  to { stroke-dashoffset: -20; }
+}
