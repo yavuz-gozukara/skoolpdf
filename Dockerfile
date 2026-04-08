@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice \
     python3 \
     python3-pip \
+    unpaper \
     zip \
     && rm -rf /var/lib/apt/lists/*
 
