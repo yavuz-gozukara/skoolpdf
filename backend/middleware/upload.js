@@ -38,6 +38,8 @@ const fileFilter = (req, file, cb) => {
         'image/webp',
         'image/gif',
         'image/tiff',
+        // Plain text
+        'text/plain',
     ];
     if (allowedMimes.includes(file.mimetype)) {
         cb(null, true);

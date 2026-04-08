@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, X, FileText, ArrowDown } from 'lucide-react';
 import { useTask } from '../context/TaskContext';
+import { useLang } from '../context/LanguageContext';
 import TaskSelector from './TaskSelector';
 import DropZone from './DropZone';
 import ActionPanel from './ActionPanel';
@@ -13,6 +14,7 @@ const PDF_ONLY_TASKS = new Set(['split', 'compress', 'ocr', 'unlock', 'watermark
 function HeroDrop({ heroFile, onFileDrop, onClear }) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef(null);
+  const { t } = useLang();
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -30,9 +32,9 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
         transition={{ duration: 0.5 }}
         className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-4"
       >
-        Your PDFs,{' '}
+        {t('hero_heading_1')}{' '}
         <span className="bg-gradient-to-r from-brand-500 via-brand-600 to-accent-500 bg-clip-text text-transparent">
-          done right.
+          {t('hero_heading_2')}
         </span>
       </motion.h1>
 
@@ -42,7 +44,7 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
         transition={{ delay: 0.15, duration: 0.4 }}
         className="text-lg text-slate-500 dark:text-slate-400 mb-8 max-w-xl mx-auto"
       >
-        Drop any file to get started — or pick a tool below.
+        {t('hero_sub')}
       </motion.p>
 
       {/* Drop zone */}
@@ -83,7 +85,7 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
                     {heroFile.name}
                   </p>
                   <p className="text-xs text-brand-600 dark:text-brand-400 font-medium mt-0.5">
-                    Ready — select a tool below
+                    {t('hero_ready')}
                   </p>
                 </div>
               </div>
@@ -102,7 +104,7 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
                              rounded-xl transition-all"
                 >
                   <UploadCloud size={13} />
-                  Change file
+                  {t('hero_change')}
                 </button>
 
                 {/* Remove file */}
@@ -117,7 +119,7 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
                              rounded-xl transition-all"
                 >
                   <X size={13} />
-                  Remove file
+                  {t('hero_remove')}
                 </button>
               </div>
             </motion.div>
@@ -133,10 +135,10 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
                 <UploadCloud size={26} />
               </div>
               <p className="font-semibold text-slate-700 dark:text-slate-200">
-                {isDragging ? 'Release to load file' : 'Drag & drop your file here'}
+                {isDragging ? t('hero_drop_release') : t('hero_drop')}
               </p>
               <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
-                or <span className="text-brand-600 dark:text-brand-400 font-medium">click to browse</span>
+                or <span className="text-brand-600 dark:text-brand-400 font-medium">{t('hero_browse')}</span>
               </p>
             </motion.div>
           )}
@@ -150,7 +152,7 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
         transition={{ delay: 0.6 }}
         className="mt-6 flex flex-col items-center text-slate-400 dark:text-slate-600"
       >
-        <span className="text-xs font-medium mb-1">or choose a tool</span>
+        <span className="text-xs font-medium mb-1">{t('hero_scroll')}</span>
         <ArrowDown size={14} className="animate-bounce" />
       </motion.div>
     </div>

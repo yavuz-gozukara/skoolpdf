@@ -169,7 +169,10 @@ const processWatermark = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'File missing' });
         const outputPath = path.join(__dirname, '..', 'uploads', `watermarked-${Date.now()}.pdf`);
-        await addWatermark(req.file.path, outputPath, req.body.text || 'CONFIDENTIAL');
+        const fontSize = Math.min(Math.max(parseInt(req.body.fontSize) || 60, 20), 120);
+        const opacity  = Math.min(Math.max(parseFloat(req.body.opacity) || 0.5, 0.1), 1.0);
+        const position = ['diagonal','center','top','bottom'].includes(req.body.position) ? req.body.position : 'diagonal';
+        await addWatermark(req.file.path, outputPath, req.body.text || 'CONFIDENTIAL', { fontSize, opacity, position });
         handleDownloadAndCleanup(res, outputPath, req.file.path);
     } catch (e) { handleError(res, e, 'Watermark failed'); }
 };

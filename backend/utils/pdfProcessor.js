@@ -71,20 +71,55 @@ async function splitPdf(inputPath, outputPath, rangesStr) {
     return outputPath;
 }
 
-async function addWatermark(inputPath, outputPath, text) {
+async function addWatermark(inputPath, outputPath, text, options = {}) {
+    const {
+        fontSize = 60,
+        opacity  = 0.5,
+        position = 'diagonal', // 'diagonal' | 'center' | 'top' | 'bottom'
+        color    = [0.8, 0.8, 0.8],
+    } = options;
+
     const pdfBytes = fs.readFileSync(inputPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const pages = pdfDoc.getPages();
 
     for (const page of pages) {
         const { width, height } = page.getSize();
+
+        // Estimate text width to center it
+        const approxCharWidth = fontSize * 0.5;
+        const textWidth = text.length * approxCharWidth;
+
+        let x, y, rotate;
+        switch (position) {
+            case 'center':
+                x = (width - textWidth) / 2;
+                y = height / 2;
+                rotate = degrees(0);
+                break;
+            case 'top':
+                x = (width - textWidth) / 2;
+                y = height - fontSize - 20;
+                rotate = degrees(0);
+                break;
+            case 'bottom':
+                x = (width - textWidth) / 2;
+                y = 20;
+                rotate = degrees(0);
+                break;
+            default: // diagonal
+                x = width / 4;
+                y = height / 2;
+                rotate = degrees(45);
+        }
+
         page.drawText(text, {
-            x: width / 4,
-            y: height / 2,
-            size: 60,
-            color: rgb(0.8, 0.8, 0.8),
-            opacity: 0.5,
-            rotate: degrees(45),
+            x,
+            y,
+            size: fontSize,
+            color: rgb(...color),
+            opacity,
+            rotate,
         });
     }
 

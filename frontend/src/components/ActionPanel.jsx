@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2, CheckCircle, FileUp, AlertTriangle, Terminal } from 'lucide-react';
 import axios from 'axios';
 import { useTask } from '../context/TaskContext';
+import { useLang } from '../context/LanguageContext';
 import PageSelector from './PageSelector';
 
 // Dev → local backend  |  Production → same-origin (Express serves the build)
@@ -66,6 +67,7 @@ function ToolMissingError({ tool, hint }) {
 }
 
 function BackButton({ onClick }) {
+  const { t } = useLang();
   return (
     <button
       onClick={onClick}
@@ -78,7 +80,7 @@ function BackButton({ onClick }) {
                  hover:text-slate-800 dark:hover:text-slate-100
                  font-medium text-sm shadow-sm transition-all"
     >
-      <ArrowLeft size={16} className="mr-2" /> Back to files
+      <ArrowLeft size={16} className="mr-2" /> {t('back_to_files')}
     </button>
   );
 }
@@ -97,6 +99,7 @@ const selectCls = `${inputCls} cursor-pointer font-medium`;
 /* ─── Main component ─────────────────────────────────────────────────────────── */
 export default function ActionPanel({ onBack }) {
   const { currentTask, files } = useTask();
+  const { t } = useLang();
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess]           = useState(false);
   const [errorType, setErrorType]       = useState(null);
@@ -105,7 +108,10 @@ export default function ActionPanel({ onBack }) {
   const [mergePages, setMergePages]       = useState({});
   const [compressLevel, setCompressLevel] = useState('ebook');
   const [password, setPassword]           = useState('');
-  const [watermarkText, setWatermarkText] = useState('CONFIDENTIAL');
+  const [watermarkText, setWatermarkText]       = useState('CONFIDENTIAL');
+  const [watermarkSize, setWatermarkSize]       = useState('60');
+  const [watermarkOpacity, setWatermarkOpacity] = useState('0.5');
+  const [watermarkPosition, setWatermarkPosition] = useState('diagonal');
   const [imageDpi, setImageDpi]           = useState('150');
   const [ocrProgress, setOcrProgress]     = useState(0);
   const pollRef = useRef(null);
@@ -163,7 +169,12 @@ export default function ActionPanel({ onBack }) {
           case 'compress':  fd.append('level', compressLevel); endpoint = '/compress'; break;
           case 'protect':   fd.append('password', password); endpoint = '/protect'; break;
           case 'unlock':    fd.append('password', password); endpoint = '/unlock'; break;
-          case 'watermark': fd.append('text', watermarkText || 'CONFIDENTIAL'); endpoint = '/watermark'; break;
+          case 'watermark':
+            fd.append('text', watermarkText || 'CONFIDENTIAL');
+            fd.append('fontSize', watermarkSize);
+            fd.append('opacity', watermarkOpacity);
+            fd.append('position', watermarkPosition);
+            endpoint = '/watermark'; break;
           case 'to-images': fd.append('dpi', imageDpi); endpoint = '/convert/to-images'; outputExt = '.zip'; break;
           case 'convert':
             endpoint = files[0].name.toLowerCase().endsWith('.pdf') ? '/convert/to-word' : '/convert/to-pdf';
@@ -234,10 +245,40 @@ export default function ActionPanel({ onBack }) {
 
         {/* Watermark */}
         {currentTask === 'watermark' && (
-          <div className="mb-8">
-            <label className={labelCls}>Watermark Text</label>
-            <input type="text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} maxLength={50} className={inputCls} placeholder="e.g. CONFIDENTIAL, DRAFT, DO NOT COPY" />
-            <p className={hintCls}>Stamped diagonally at 50% opacity across every page.</p>
+          <div className="mb-8 flex flex-col gap-5">
+            <div>
+              <label className={labelCls}>Watermark Text</label>
+              <input type="text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} maxLength={50} className={inputCls} placeholder="e.g. CONFIDENTIAL, DRAFT, DO NOT COPY" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Font Size</label>
+                <select value={watermarkSize} onChange={e => setWatermarkSize(e.target.value)} className={selectCls}>
+                  <option value="30">Small (30pt)</option>
+                  <option value="60">Medium (60pt)</option>
+                  <option value="90">Large (90pt)</option>
+                  <option value="120">Extra Large (120pt)</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Opacity</label>
+                <select value={watermarkOpacity} onChange={e => setWatermarkOpacity(e.target.value)} className={selectCls}>
+                  <option value="0.15">Subtle (15%)</option>
+                  <option value="0.3">Light (30%)</option>
+                  <option value="0.5">Medium (50%)</option>
+                  <option value="0.75">Strong (75%)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className={labelCls}>Position</label>
+              <select value={watermarkPosition} onChange={e => setWatermarkPosition(e.target.value)} className={selectCls}>
+                <option value="diagonal">Diagonal (center)</option>
+                <option value="center">Horizontal center</option>
+                <option value="top">Top</option>
+                <option value="bottom">Bottom</option>
+              </select>
+            </div>
           </div>
         )}
 
@@ -321,18 +362,18 @@ export default function ActionPanel({ onBack }) {
                      transition-all shadow-xl shadow-brand-500/25"
         >
           {isProcessing ? (
-            <><Loader2 size={22} className="animate-spin mr-2"/>{currentTask === 'ocr' ? 'Running OCR...' : 'Processing...'}</>
+            <><Loader2 size={22} className="animate-spin mr-2"/>{currentTask === 'ocr' ? t('ocr_running') : t('processing')}</>
           ) : success ? (
-            <><CheckCircle size={22} className="mr-2"/>Done! File Downloaded</>
+            <><CheckCircle size={22} className="mr-2"/>{t('done')}</>
           ) : (
-            <><FileUp size={22} className="mr-2"/>Process & Download</>
+            <><FileUp size={22} className="mr-2"/>{t('process_btn')}</>
           )}
         </button>
 
         {success && (
           <div className="mt-6 text-center">
             <button onClick={() => { setSuccess(false); onBack(); }} className="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
-              Process another file
+              {t('process_another')}
             </button>
           </div>
         )}
