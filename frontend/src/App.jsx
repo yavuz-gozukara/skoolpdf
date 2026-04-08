@@ -117,10 +117,7 @@ function Footer() {
               <span className="text-slate-700 dark:text-slate-300">PDF</span>
             </span>
           </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
-            {t('powered_by')}
-          </p>
-          <div className="flex items-center gap-4">
+<div className="flex items-center gap-4">
             <p className="text-xs text-slate-400 dark:text-slate-500">{t('copyright')}</p>
             <LanguagePicker />
           </div>
