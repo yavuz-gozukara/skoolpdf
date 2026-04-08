@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { translations, getStoredLang, setStoredLang } from '../i18n';
+import { getTranslation, getStoredLang, setStoredLang } from '../i18n';
 
 const LanguageContext = createContext();
 
@@ -11,7 +11,7 @@ export function LanguageProvider({ children }) {
     setLangState(code);
   };
 
-  const t = (key) => translations[lang]?.[key] ?? translations.en[key] ?? key;
+  const t = (key) => getTranslation(lang, key);
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>

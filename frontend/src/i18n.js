@@ -21,7 +21,7 @@ export const translations = {
     powered_by: 'Powered by Ghostscript · qpdf · ocrmypdf · LibreOffice · pdf-lib',
   },
   tr: {
-    hero_heading_1: 'PDF\'leriniz,',
+    hero_heading_1: "PDF'leriniz,",
     hero_heading_2: 'mükemmel şekilde.',
     hero_sub: 'Başlamak için dosya bırakın — ya da aşağıdan bir araç seçin.',
     hero_drop: 'Dosyanızı sürükleyip bırakın',
@@ -37,7 +37,7 @@ export const translations = {
     done: 'Tamam! Dosya İndirildi',
     process_another: 'Başka dosya işle',
     ocr_running: 'OCR çalışıyor...',
-    tagline: 'skoolPDF ile PDF\'lerinizi zahmetsizce düzenleyin. İhtiyacınız olan tüm profesyonel araçlara tek bir yerden ulaşın, belgelerinizi hızlı ve güvenli biçimde yönetin.',
+    tagline: "skoolPDF ile PDF'lerinizi zahmetsizce düzenleyin. İhtiyacınız olan tüm profesyonel araçlara tek bir yerden ulaşın, belgelerinizi hızlı ve güvenli biçimde yönetin.",
     copyright: `© ${new Date().getFullYear()} skoolPDF. PDF Editörünüz`,
     powered_by: 'Destekleyen: Ghostscript · qpdf · ocrmypdf · LibreOffice · pdf-lib',
   },
@@ -127,13 +127,39 @@ export const translations = {
   },
 };
 
+// Fallback to English for languages without full translations
+const LANG_CODES_WITH_TRANSLATIONS = new Set(['en','tr','es','de','fr','pt']);
+export function getTranslation(lang, key) {
+  const code = LANG_CODES_WITH_TRANSLATIONS.has(lang) ? lang : 'en';
+  return translations[code]?.[key] ?? translations.en[key] ?? key;
+}
+
 export const LANGUAGES = [
-  { code: 'en', label: 'English',    flag: '🇬🇧' },
-  { code: 'tr', label: 'Türkçe',     flag: '🇹🇷' },
-  { code: 'es', label: 'Español',    flag: '🇪🇸' },
-  { code: 'de', label: 'Deutsch',    flag: '🇩🇪' },
-  { code: 'fr', label: 'Français',   flag: '🇫🇷' },
-  { code: 'pt', label: 'Português',  flag: '🇵🇹' },
+  { code: 'en', label: 'English'          },
+  { code: 'es', label: 'Español'          },
+  { code: 'fr', label: 'Français'         },
+  { code: 'de', label: 'Deutsch'          },
+  { code: 'it', label: 'Italiano'         },
+  { code: 'pt', label: 'Português'        },
+  { code: 'ja', label: '日本語'            },
+  { code: 'ru', label: 'Русский'          },
+  { code: 'ko', label: '한국어'            },
+  { code: 'zh', label: '中文 (简体)'       },
+  { code: 'zt', label: '中文 (繁體)'       },
+  { code: 'ar', label: 'العربية'          },
+  { code: 'bg', label: 'Български'        },
+  { code: 'ca', label: 'Català'           },
+  { code: 'nl', label: 'Nederlands'       },
+  { code: 'el', label: 'Ελληνικά'         },
+  { code: 'hi', label: 'हिन्दी'           },
+  { code: 'id', label: 'Bahasa Indonesia' },
+  { code: 'ms', label: 'Bahasa Melayu'   },
+  { code: 'pl', label: 'Polski'           },
+  { code: 'sv', label: 'Svenska'          },
+  { code: 'th', label: 'ภาษาไทย'          },
+  { code: 'tr', label: 'Türkçe'          },
+  { code: 'uk', label: 'Українська'       },
+  { code: 'vi', label: 'Tiếng Việt'      },
 ];
 
 export function getStoredLang() {

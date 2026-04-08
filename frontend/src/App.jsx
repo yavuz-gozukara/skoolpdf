@@ -3,7 +3,7 @@ import { FileStack, Shield, Trash2, Lock, Zap, Moon, Sun } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import { TaskProvider, useTask } from './context/TaskContext';
 import { LanguageProvider, useLang } from './context/LanguageContext';
-import { LANGUAGES } from './i18n';
+import LanguagePicker from './components/LanguagePicker';
 
 /* ─── Logo mark ─────────────────────────────────────────────────────────────── */
 function Logo({ onClick }) {
@@ -73,7 +73,7 @@ function Header({ darkMode, onToggle }) {
 
 /* ─── Footer ─────────────────────────────────────────────────────────────────── */
 function Footer() {
-  const { lang, setLang, t } = useLang();
+  const { t } = useLang();
 
   const badges = [
     { icon: Trash2, title: 'Auto-Deleted',        desc: 'Files are permanently removed from the server immediately after download.' },
@@ -86,11 +86,6 @@ function Footer() {
     <footer className="mt-auto border-t border-slate-100 dark:border-slate-800
                        bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Tagline */}
-        <p className="text-sm text-slate-500 dark:text-slate-400 text-center max-w-2xl mx-auto mb-8 leading-relaxed">
-          {t('tagline')}
-        </p>
-
         {/* Badges */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           {badges.map(({ icon: Icon, title, desc }) => (
@@ -105,24 +100,6 @@ function Footer() {
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 leading-relaxed">{desc}</p>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Language selector */}
-        <div className="flex flex-wrap justify-center gap-1.5 mb-8">
-          {LANGUAGES.map(({ code, label, flag }) => (
-            <button
-              key={code}
-              onClick={() => setLang(code)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                ${lang === code
-                  ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 border border-brand-300 dark:border-brand-700'
-                  : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-700 hover:border-brand-300 dark:hover:border-brand-700 hover:text-brand-600 dark:hover:text-brand-400'
-                }`}
-            >
-              <span>{flag}</span>
-              {label}
-            </button>
           ))}
         </div>
 
@@ -143,9 +120,10 @@ function Footer() {
           <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
             {t('powered_by')}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            {t('copyright')}
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-xs text-slate-400 dark:text-slate-500">{t('copyright')}</p>
+            <LanguagePicker />
+          </div>
         </div>
       </div>
     </footer>
