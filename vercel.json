@@ -2,6 +2,10 @@
   "version": 2,
   "routes": [
     {
+      "src": "/favicon.ico",
+      "dest": "/favicon.svg"
+    },
+    {
       "handle": "filesystem"
     },
     {
