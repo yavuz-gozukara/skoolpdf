@@ -11,16 +11,25 @@ const CARD_HOVER = {
   'Security & Branding': 'hover:from-teal-50   hover:to-emerald-50  dark:hover:from-teal-900/25   dark:hover:to-emerald-900/25 hover:border-teal-200   dark:hover:border-teal-800',
 };
 
+const OFFICE_MIMES = new Set([
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+]);
+
 const COMPAT_CHECK = {
-  merge: f => f?.type === 'application/pdf',
-  split: f => f?.type === 'application/pdf',
-  compress: f => f?.type === 'application/pdf',
-  ocr: f => f?.type === 'application/pdf',
-  unlock: f => f?.type === 'application/pdf',
-  watermark: f => f?.type === 'application/pdf',
-  'to-images': f => f?.type === 'application/pdf',
-  protect: () => true,
-  convert: () => true,
+  merge:      f => f?.type === 'application/pdf',
+  split:      f => f?.type === 'application/pdf',
+  compress:   f => f?.type === 'application/pdf',
+  ocr:        f => f?.type === 'application/pdf',
+  unlock:     f => f?.type === 'application/pdf',
+  watermark:  f => f?.type === 'application/pdf',
+  'to-images':f => f?.type === 'application/pdf',
+  protect:    f => f?.type === 'application/pdf' || OFFICE_MIMES.has(f?.type),
+  convert:    f => f?.type === 'application/pdf' || OFFICE_MIMES.has(f?.type) || f?.type?.startsWith('image/'),
 };
 
 const categories = [

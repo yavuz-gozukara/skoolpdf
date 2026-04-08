@@ -64,7 +64,9 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
               : 'border-slate-300 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer'
           }`}
       >
-        <input ref={inputRef} type="file" className="hidden" onChange={e => e.target.files[0] && onFileDrop(e.target.files[0])} />
+        <input ref={inputRef} type="file" className="hidden"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.gif,.tiff"
+          onChange={e => e.target.files[0] && onFileDrop(e.target.files[0])} />
 
         <AnimatePresence mode="wait">
           {heroFile ? (
