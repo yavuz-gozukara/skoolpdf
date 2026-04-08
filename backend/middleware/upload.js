@@ -32,14 +32,12 @@ const fileFilter = (req, file, cb) => {
         // PowerPoint
         'application/vnd.ms-powerpoint',
         'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        // Images
+        // Images (convert tool only — not encryption)
         'image/jpeg',
         'image/png',
         'image/webp',
         'image/gif',
         'image/tiff',
-        // Plain text
-        'text/plain',
     ];
     if (allowedMimes.includes(file.mimetype)) {
         cb(null, true);

@@ -7,6 +7,7 @@ const { convertToPdf } = require('../workers/libreofficeWorker');
 const { unlockPdf, protectPdf } = require('../workers/qpdfWorker');
 const { convertToDocx } = require('../workers/pythonWorker');
 const { processOcrFile } = require('../workers/ocrWorker');
+const { encryptOffice } = require('../workers/officeEncryptWorker');
 
 // ─── In-memory job store for async OCR ────────────────────────────────────────
 const jobs = new Map(); // jobId -> { status, progress, outputPath, inputPath, createdAt, error }
@@ -177,35 +178,39 @@ const processWatermark = async (req, res) => {
     } catch (e) { handleError(res, e, 'Watermark failed'); }
 };
 
+const OFFICE_MIMES = new Set([
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+]);
+
 const processProtect = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'File missing' });
         if (!req.body.password) return res.status(400).json({ error: 'Password required' });
 
-        const outputPath = path.join(__dirname, '..', 'uploads', `protected-${Date.now()}.pdf`);
-        let pdfToEncrypt = req.file.path;
-        let tempPath = null;
+        const { mimetype, path: inputPath, originalname } = req.file;
+        const ext = path.extname(originalname).toLowerCase();
 
-        // Non-PDF: convert to PDF first, then encrypt
-        if (req.file.mimetype !== 'application/pdf') {
-            const isImage = req.file.mimetype.startsWith('image/');
-            tempPath = path.join(__dirname, '..', 'uploads', `temp-${Date.now()}.pdf`);
+        if (mimetype === 'application/pdf') {
+            // PDF → qpdf AES-256
+            const outputPath = path.join(__dirname, '..', 'uploads', `protected-${Date.now()}.pdf`);
+            await protectPdf(inputPath, outputPath, req.body.password);
+            handleDownloadAndCleanup(res, outputPath, inputPath);
 
-            if (isImage) {
-                // Embed image directly via pdf-lib (no external tool needed)
-                await mergePdfs([req.file.path], tempPath);
-            } else {
-                // Office files: LibreOffice converts and returns actual output path
-                const outDir = path.join(__dirname, '..', 'uploads');
-                tempPath = await convertToPdf(req.file.path, outDir);
-            }
-            pdfToEncrypt = tempPath;
+        } else if (OFFICE_MIMES.has(mimetype)) {
+            // Office → msoffcrypto-tool (native ECMA-376 encryption)
+            const outputPath = path.join(__dirname, '..', 'uploads', `protected-${Date.now()}${ext}`);
+            await encryptOffice(inputPath, outputPath, req.body.password);
+            handleDownloadAndCleanup(res, outputPath, inputPath);
+
+        } else {
+            fs.unlinkSync(inputPath);
+            return res.status(415).json({ error: 'Unsupported file type for encryption. Only PDF and Office files are supported.' });
         }
-
-        await protectPdf(pdfToEncrypt, outputPath, req.body.password);
-
-        if (tempPath && tempPath !== req.file.path && fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-        handleDownloadAndCleanup(res, outputPath, req.file.path);
     } catch (e) { handleError(res, e, 'Encryption failed'); }
 };
 

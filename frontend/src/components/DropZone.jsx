@@ -4,8 +4,10 @@ import { UploadCloud, File, X, ArrowLeft, Send } from 'lucide-react';
 import { useTask } from '../context/TaskContext';
 import CustomPdfPreview from './CustomPdfPreview';
 
-const ALL_DOCS   = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx';
-const ALL_IMAGES = '.jpg,.jpeg,.png,.webp,.gif,.tiff';
+const ALL_DOCS        = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx';
+const ALL_IMAGES      = '.jpg,.jpeg,.png,.webp,.gif,.tiff';
+const OFFICE_ONLY     = '.doc,.docx,.ppt,.pptx,.xls,.xlsx';
+const PDF_AND_OFFICE  = `.pdf,${OFFICE_ONLY}`;
 const PDF_ONLY   = 'application/pdf';
 
 export default function DropZone({ onContinue }) {
@@ -19,8 +21,18 @@ export default function DropZone({ onContinue }) {
     if (e.dataTransfer.files?.length > 0) addFiles(Array.from(e.dataTransfer.files));
   };
 
+  const OFFICE_MIMES = new Set([
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  ]);
+
   const isAcceptable = (file) => {
-    if (currentTask === 'convert' || currentTask === 'protect') return true;
+    if (currentTask === 'convert') return true;
+    if (currentTask === 'protect') return file.type === 'application/pdf' || OFFICE_MIMES.has(file.type);
     return file.type === 'application/pdf';
   };
 
@@ -38,7 +50,7 @@ export default function DropZone({ onContinue }) {
       case 'split':     return { title:'Extract Pages',         desc:'Upload the PDF you want to split.',                                                    accept:PDF_ONLY };
       case 'compress':  return { title:'Compress PDF',          desc:'Upload a PDF to optimise its file size.',                                              accept:PDF_ONLY };
       case 'ocr':       return { title:'OCR — Make Searchable', desc:'Upload a scanned PDF to extract its text layer.',                                      accept:PDF_ONLY };
-      case 'protect':   return { title:'Add Password',          desc:'Upload any file — PDF, Word, Excel, PowerPoint or image — to encrypt with AES-256.',   accept:`${ALL_DOCS},${ALL_IMAGES}` };
+      case 'protect':   return { title:'Add Password',          desc:'Upload a PDF or Office file (Word, Excel, PowerPoint) to encrypt with native AES-256.', accept:PDF_AND_OFFICE };
       case 'unlock':    return { title:'Unlock PDF',            desc:'Upload a password-protected PDF to remove its lock.',                                  accept:PDF_ONLY };
       case 'watermark': return { title:'Add Watermark',         desc:'Upload a PDF to stamp custom text on every page.',                                     accept:PDF_ONLY };
       case 'convert':   return { title:'Universal Converter',   desc:'Upload a PDF, Word, Excel, PowerPoint or image file.',                                 accept:`${ALL_DOCS},${ALL_IMAGES}` };

@@ -23,8 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Python packages (pdf2docx + ocrmypdf)
-RUN pip3 install --break-system-packages pdf2docx ocrmypdf
+# Python packages
+RUN pip3 install --break-system-packages pdf2docx ocrmypdf msoffcrypto-tool
 
 WORKDIR /app
 

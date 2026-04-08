@@ -239,7 +239,7 @@ export default function ActionPanel({ onBack }) {
           <div className="mb-8">
             <label className={labelCls}>{currentTask === 'protect' ? 'Set a password' : 'Enter password to unlock'}</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputCls} placeholder="••••••••" />
-            {currentTask === 'protect' && <p className={hintCls}>Non-PDF files are automatically converted to PDF before encryption.</p>}
+            {currentTask === 'protect' && <p className={hintCls}>PDF files are encrypted with AES-256 via qpdf. Office files use native ECMA-376 encryption — the file format is preserved.</p>}
           </div>
         )}
 
