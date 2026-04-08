@@ -161,18 +161,6 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
   );
 }
 
-/* ─── Tagline section ────────────────────────────────────────────────────────── */
-function Tagline() {
-  const { t } = useLang();
-  return (
-    <div className="w-full max-w-3xl mx-auto px-6 py-16 text-center">
-      <p className="text-xl sm:text-2xl text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-        {t('tagline')}
-      </p>
-    </div>
-  );
-}
-
 /* ─── Dashboard ──────────────────────────────────────────────────────────────── */
 export default function Dashboard() {
   const { currentTask, setFiles } = useTask();
@@ -216,8 +204,7 @@ export default function Dashboard() {
         <>
           <HeroDrop heroFile={heroFile} onFileDrop={setHeroFile} onClear={handleClearHero} />
           <TaskSelector heroFile={heroFile} />
-          <Tagline />
-        </>
+</>
       ) : step === 'upload' ? (
         <DropZone onContinue={() => setStep('action')} />
       ) : (
