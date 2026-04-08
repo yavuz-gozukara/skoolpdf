@@ -1,6 +1,6 @@
 const { execFile } = require('child_process');
 
-const ALLOWED_LANGS = new Set(['eng', 'tur', 'deu', 'fra', 'spa', 'por', 'ita', 'rus', 'chi_sim', 'chi_tra', 'jpn', 'kor', 'ara']);
+const ALLOWED_LANG_PARTS = new Set(['eng', 'tur', 'deu', 'fra', 'spa', 'por', 'ita', 'rus', 'chi_sim', 'chi_tra', 'jpn', 'kor', 'ara']);
 
 // Extend PATH so execFile can find pip-installed binaries in Docker
 const ENV = {
@@ -8,11 +8,13 @@ const ENV = {
     PATH: `/usr/local/bin:/usr/bin:/bin:${process.env.PATH || ''}`,
 };
 
-function processOcrFile(inputPath, outputPath, language = 'eng') {
-    const lang = ALLOWED_LANGS.has(language) ? language : 'eng';
+function processOcrFile(inputPath, outputPath, language = 'tur+eng') {
+    // Allow combined langs like "tur+eng" — validate each part
+    const parts = language.split('+');
+    const lang  = parts.every(p => ALLOWED_LANG_PARTS.has(p)) ? language : 'tur+eng';
 
     const args = [
-        '--skip-text',
+        '--force-ocr',
         '--deskew',
         '--rotate-pages',
         '--clean',

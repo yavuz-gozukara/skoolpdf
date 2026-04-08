@@ -122,6 +122,7 @@ export default function ActionPanel({ onBack }) {
   const [watermarkPosition, setWatermarkPosition] = useState('diagonal');
   const [imageDpi, setImageDpi]           = useState('150');
   const [ocrProgress, setOcrProgress]     = useState(0);
+  const [ocrLang, setOcrLang]             = useState('tur+eng');
   const pollRef = useRef(null);
 
   const stopPolling = () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
@@ -160,7 +161,7 @@ export default function ActionPanel({ onBack }) {
       const fd = new FormData();
 
       if (currentTask === 'ocr') {
-        fd.append('file', files[0]); fd.append('language', 'eng');
+        fd.append('file', files[0]); fd.append('language', ocrLang);
         await handleOcrJob(fd); setSuccess(true); return;
       }
 
@@ -325,9 +326,25 @@ export default function ActionPanel({ onBack }) {
 
         {/* OCR */}
         {currentTask === 'ocr' && !isOcrRunning && (
-          <div className="mb-8 p-5 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800 rounded-xl font-medium flex items-start">
-            <span className="mr-3 mt-0.5">💡</span>
-            <span>Smart OCR engine ready. Your scanned PDF will be deeply analysed — making it fully searchable and copy-able without losing image quality.</span>
+          <div className="mb-8 flex flex-col gap-4">
+            <div>
+              <label htmlFor="ocr-lang" className={labelCls}>Document Language</label>
+              <select id="ocr-lang" value={ocrLang} onChange={e => setOcrLang(e.target.value)} className={selectCls}>
+                <option value="tur+eng">Turkish + English</option>
+                <option value="tur">Turkish only</option>
+                <option value="eng">English only</option>
+                <option value="deu">German</option>
+                <option value="fra">French</option>
+                <option value="spa">Spanish</option>
+                <option value="rus">Russian</option>
+                <option value="ara">Arabic</option>
+              </select>
+              <p className={hintCls}>Selecting the correct language improves OCR accuracy significantly.</p>
+            </div>
+            <div className="p-4 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800 rounded-xl text-sm font-medium flex items-start">
+              <span className="mr-3 mt-0.5">💡</span>
+              <span>Smart OCR engine ready. Your scanned PDF will be deeply analysed — making it fully searchable and copy-able without losing image quality.</span>
+            </div>
           </div>
         )}
         {isOcrRunning && <OcrProgressBar progress={ocrProgress} />}
