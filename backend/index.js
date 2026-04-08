@@ -16,13 +16,17 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
     origin: (origin, cb) => {
-        // Same-origin requests (no Origin header) are always allowed
+        // No Origin header → same-origin or non-browser request, always allow
         if (!origin) return cb(null, true);
-        // Allow localhost in development
-        if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost')) return cb(null, true);
-        // Allow explicitly whitelisted origins (set ALLOWED_ORIGINS env var on Railway)
-        if (allowedOrigins.includes(origin)) return cb(null, true);
-        cb(new Error('Not allowed by CORS'));
+        // Always allow localhost (development)
+        if (origin.startsWith('http://localhost')) return cb(null, true);
+        // If ALLOWED_ORIGINS is explicitly configured, enforce it strictly
+        if (allowedOrigins.length) {
+            return allowedOrigins.includes(origin) ? cb(null, true) : cb(new Error('Not allowed by CORS'));
+        }
+        // No explicit allowlist → allow all origins
+        // (safe: this app has no sessions/cookies, file processing only)
+        cb(null, true);
     },
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
