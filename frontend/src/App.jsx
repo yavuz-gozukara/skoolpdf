@@ -94,7 +94,7 @@ function Footer() {
                          bg-slate-50 dark:bg-slate-800/60
                          border border-slate-100 dark:border-slate-700"
             >
-              <Icon size={16} className="text-brand-500 dark:text-brand-400 shrink-0 mt-0.5" />
+              <Icon size={16} aria-hidden="true" className="text-brand-500 dark:text-brand-400 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{title}</p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 leading-relaxed">{desc}</p>

@@ -99,17 +99,22 @@ export default function TaskSelector({ heroFile }) {
                       whileHover={dimmed ? {} : { scale: 1.02 }}
                       whileTap={dimmed ? {} : { scale: 0.97 }}
                       onClick={() => !dimmed && setCurrentTask(task.id)}
-                      title={dimmed ? 'This tool requires a PDF file' : undefined}
+                      role="button"
+                      tabIndex={dimmed ? -1 : 0}
+                      aria-disabled={dimmed ? 'true' : undefined}
+                      aria-label={dimmed ? `${task.title} — requires a compatible file` : task.title}
+                      onKeyDown={e => { if (!dimmed && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setCurrentTask(task.id); }}}
                       className={`group bg-gradient-to-br bg-white dark:bg-slate-800/80
                                   rounded-2xl p-4 border border-slate-100 dark:border-slate-700
                                   shadow-sm transition-all duration-200
                                   flex items-start space-x-3 touch-manipulation
+                                  focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2
                                   ${dimmed ? 'cursor-not-allowed' : 'cursor-pointer'}
                                   ${!dimmed ? hoverCls : ''}
                                   `}
                     >
                       {/* Icon */}
-                      <div className={`w-10 h-10 shrink-0 ${task.bg} rounded-xl flex items-center justify-center mt-0.5`}>
+                      <div className={`w-10 h-10 shrink-0 ${task.bg} rounded-xl flex items-center justify-center mt-0.5`} aria-hidden="true">
                         <Icon size={19} className={task.color} />
                       </div>
 

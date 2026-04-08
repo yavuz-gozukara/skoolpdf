@@ -24,12 +24,19 @@ function OcrProgressBar({ progress }) {
     progress < 100 ? 'Applying compression...' :
                      'Done! Preparing download...';
   return (
-    <div className="mb-6">
+    <div className="mb-6" role="status" aria-label={`OCR Progress: ${progress}%`}>
       <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
         <span>OCR Progress</span>
-        <span className="text-brand-600 dark:text-brand-400 font-bold">{progress}%</span>
+        <span className="text-brand-600 dark:text-brand-400 font-bold" aria-hidden="true">{progress}%</span>
       </div>
-      <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-200 dark:border-slate-600">
+      <div
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="OCR processing progress"
+        className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-200 dark:border-slate-600"
+      >
         <motion.div
           className="h-full bg-gradient-to-r from-brand-500 to-accent-500 rounded-full"
           initial={{ width: '0%' }}
@@ -37,7 +44,7 @@ function OcrProgressBar({ progress }) {
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
-      <p className="mt-2 text-xs text-slate-400 dark:text-slate-500 italic">{label}</p>
+      <p className="mt-2 text-xs text-slate-400 dark:text-slate-500 italic" aria-live="polite">{label}</p>
     </div>
   );
 }
@@ -45,7 +52,7 @@ function OcrProgressBar({ progress }) {
 function ToolMissingError({ tool, hint }) {
   const info = TOOL_HINTS[tool] || { label: tool, cmd: `Install ${tool}` };
   return (
-    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
+    <div role="alert" className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
       <div className="flex items-start space-x-3">
         <AlertTriangle size={20} className="text-amber-500 shrink-0 mt-0.5" />
         <div>
@@ -92,7 +99,8 @@ const inputCls = `w-full px-4 py-3 rounded-xl
   text-slate-800 dark:text-slate-100
   placeholder-slate-400 dark:placeholder-slate-500
   focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 dark:focus:border-brand-400
-  transition-all outline-none`;
+  focus-visible:outline-2 focus-visible:outline-brand-500
+  transition-all`;
 
 const selectCls = `${inputCls} cursor-pointer font-medium`;
 
@@ -224,8 +232,8 @@ export default function ActionPanel({ onBack }) {
         {/* Compress */}
         {currentTask === 'compress' && (
           <div className="mb-8">
-            <label className={labelCls}>Compression Level</label>
-            <select value={compressLevel} onChange={e => setCompressLevel(e.target.value)} className={selectCls}>
+            <label htmlFor="compress-level" className={labelCls}>Compression Level</label>
+            <select id="compress-level" value={compressLevel} onChange={e => setCompressLevel(e.target.value)} className={selectCls}>
               <option value="screen">🚀 Maximum (72 dpi — smallest file, screen only)</option>
               <option value="ebook">📖 Balanced (150 dpi — e-readers & digital sharing)</option>
               <option value="printer">🖨️ High Quality (300 dpi — print-ready / archival)</option>
@@ -237,8 +245,8 @@ export default function ActionPanel({ onBack }) {
         {/* Protect / Unlock */}
         {(currentTask === 'protect' || currentTask === 'unlock') && (
           <div className="mb-8">
-            <label className={labelCls}>{currentTask === 'protect' ? 'Set a password' : 'Enter password to unlock'}</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputCls} placeholder="••••••••" />
+            <label htmlFor="pdf-password" className={labelCls}>{currentTask === 'protect' ? 'Set a password' : 'Enter password to unlock'}</label>
+            <input id="pdf-password" type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputCls} placeholder="••••••••" autoComplete={currentTask === 'protect' ? 'new-password' : 'current-password'} />
             {currentTask === 'protect' && <p className={hintCls}>PDF files are encrypted with AES-256 via qpdf. Office files use native ECMA-376 encryption — the file format is preserved.</p>}
           </div>
         )}
@@ -247,13 +255,13 @@ export default function ActionPanel({ onBack }) {
         {currentTask === 'watermark' && (
           <div className="mb-8 flex flex-col gap-5">
             <div>
-              <label className={labelCls}>Watermark Text</label>
-              <input type="text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} maxLength={50} className={inputCls} placeholder="e.g. CONFIDENTIAL, DRAFT, DO NOT COPY" />
+              <label htmlFor="watermark-text" className={labelCls}>Watermark Text</label>
+              <input id="watermark-text" type="text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} maxLength={50} className={inputCls} placeholder="e.g. CONFIDENTIAL, DRAFT, DO NOT COPY" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>Font Size</label>
-                <select value={watermarkSize} onChange={e => setWatermarkSize(e.target.value)} className={selectCls}>
+                <label htmlFor="watermark-size" className={labelCls}>Font Size</label>
+                <select id="watermark-size" value={watermarkSize} onChange={e => setWatermarkSize(e.target.value)} className={selectCls}>
                   <option value="30">Small (30pt)</option>
                   <option value="60">Medium (60pt)</option>
                   <option value="90">Large (90pt)</option>
@@ -261,8 +269,8 @@ export default function ActionPanel({ onBack }) {
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Opacity</label>
-                <select value={watermarkOpacity} onChange={e => setWatermarkOpacity(e.target.value)} className={selectCls}>
+                <label htmlFor="watermark-opacity" className={labelCls}>Opacity</label>
+                <select id="watermark-opacity" value={watermarkOpacity} onChange={e => setWatermarkOpacity(e.target.value)} className={selectCls}>
                   <option value="0.15">Subtle (15%)</option>
                   <option value="0.3">Light (30%)</option>
                   <option value="0.5">Medium (50%)</option>
@@ -271,8 +279,8 @@ export default function ActionPanel({ onBack }) {
               </div>
             </div>
             <div>
-              <label className={labelCls}>Position</label>
-              <select value={watermarkPosition} onChange={e => setWatermarkPosition(e.target.value)} className={selectCls}>
+              <label htmlFor="watermark-position" className={labelCls}>Position</label>
+              <select id="watermark-position" value={watermarkPosition} onChange={e => setWatermarkPosition(e.target.value)} className={selectCls}>
                 <option value="diagonal">Diagonal (center)</option>
                 <option value="center">Horizontal center</option>
                 <option value="top">Top</option>
@@ -305,8 +313,8 @@ export default function ActionPanel({ onBack }) {
         {/* PDF to Images */}
         {currentTask === 'to-images' && (
           <div className="mb-8">
-            <label className={labelCls}>Image Resolution (DPI)</label>
-            <select value={imageDpi} onChange={e => setImageDpi(e.target.value)} className={selectCls}>
+            <label htmlFor="image-dpi" className={labelCls}>Image Resolution (DPI)</label>
+            <select id="image-dpi" value={imageDpi} onChange={e => setImageDpi(e.target.value)} className={selectCls}>
               <option value="72">72 dpi — Screen / preview</option>
               <option value="150">150 dpi — Balanced (default)</option>
               <option value="300">300 dpi — Print quality</option>
@@ -348,7 +356,7 @@ export default function ActionPanel({ onBack }) {
         {/* Errors */}
         {errorType?.type === 'tool' && <ToolMissingError tool={errorType.tool} hint={errorType.hint} />}
         {errorType?.type === 'message' && (
-          <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-6 text-sm font-medium border border-red-100 dark:border-red-800">
+          <div role="alert" className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-6 text-sm font-medium border border-red-100 dark:border-red-800">
             {errorType.message}
           </div>
         )}
