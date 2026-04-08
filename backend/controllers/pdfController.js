@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+const supabase = require('../supabaseClient');
 const { mergePdfs, splitPdf, addWatermark } = require('../utils/pdfProcessor');
 const { compressPdf, convertToImages } = require('../workers/ghostscriptWorker');
 const { convertToPdf } = require('../workers/libreofficeWorker');
@@ -8,6 +9,17 @@ const { unlockPdf, protectPdf } = require('../workers/qpdfWorker');
 const { convertToDocx } = require('../workers/pythonWorker');
 const { processOcrFile } = require('../workers/ocrWorker');
 const { encryptOffice } = require('../workers/officeEncryptWorker');
+
+const logPdfJob = async ({ operation, originalName, outputName, status, metadata }) => {
+  const { error } = await supabase.from('pdf_jobs').insert([{
+    operation,
+    original_name: originalName || null,
+    output_name: outputName || null,
+    status,
+    metadata: metadata || null,
+  }]);
+  if (error) console.error('[Supabase] pdf_jobs insert error', error);
+};
 
 // ─── In-memory job store for async OCR ────────────────────────────────────────
 const jobs = new Map(); // jobId -> { status, progress, outputPath, inputPath, createdAt, error }
@@ -66,6 +78,13 @@ const processMerge = async (req, res) => {
         const ranges = rangesStr ? rangesStr.split('|') : [];
         const outputPath = path.join(__dirname, '..', 'uploads', `merged-${Date.now()}.pdf`);
         await mergePdfs(filePaths, outputPath, ranges);
+        await logPdfJob({
+            operation: 'merge',
+            originalName: req.files.map(f => f.originalname).join(', '),
+            outputName: path.basename(outputPath),
+            status: 'done',
+            metadata: { fileCount: req.files.length, ranges },
+        });
         handleDownloadAndCleanup(res, outputPath, filePaths);
     } catch (e) { handleError(res, e, 'Merge failed'); }
 };
@@ -75,6 +94,13 @@ const processSplit = async (req, res) => {
         if (!req.file) return res.status(400).json({ error: 'File missing' });
         const outputPath = path.join(__dirname, '..', 'uploads', `split-${Date.now()}.pdf`);
         await splitPdf(req.file.path, outputPath, req.body.ranges);
+        await logPdfJob({
+            operation: 'split',
+            originalName: req.file.originalname,
+            outputName: path.basename(outputPath),
+            status: 'done',
+            metadata: { ranges: req.body.ranges },
+        });
         handleDownloadAndCleanup(res, outputPath, req.file.path);
     } catch (e) { handleError(res, e, 'Split failed'); }
 };
@@ -84,6 +110,13 @@ const processCompress = async (req, res) => {
         if (!req.file) return res.status(400).json({ error: 'File missing' });
         const outputPath = path.join(__dirname, '..', 'uploads', `compressed-${Date.now()}.pdf`);
         await compressPdf(req.file.path, outputPath, req.body.level || 'ebook');
+        await logPdfJob({
+            operation: 'compress',
+            originalName: req.file.originalname,
+            outputName: path.basename(outputPath),
+            status: 'done',
+            metadata: { level: req.body.level || 'ebook' },
+        });
         handleDownloadAndCleanup(res, outputPath, req.file.path);
     } catch (e) { handleError(res, e, 'Compression failed'); }
 };
@@ -166,6 +199,13 @@ const processWatermark = async (req, res) => {
         const position = ['diagonal','center','top','bottom'].includes(req.body.position) ? req.body.position : 'diagonal';
         const pagesStr = typeof req.body.pages === 'string' ? req.body.pages : '';
         await addWatermark(req.file.path, outputPath, req.body.text || 'CONFIDENTIAL', { fontSize, opacity, position, pagesStr });
+        await logPdfJob({
+            operation: 'watermark',
+            originalName: req.file.originalname,
+            outputName: path.basename(outputPath),
+            status: 'done',
+            metadata: { text: req.body.text || 'CONFIDENTIAL', position, pagesStr },
+        });
         handleDownloadAndCleanup(res, outputPath, req.file.path);
     } catch (e) { handleError(res, e, 'Watermark failed'); }
 };
