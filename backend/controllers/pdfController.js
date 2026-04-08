@@ -164,7 +164,8 @@ const processWatermark = async (req, res) => {
         const fontSize = Math.min(Math.max(parseInt(req.body.fontSize) || 60, 20), 120);
         const opacity  = Math.min(Math.max(parseFloat(req.body.opacity) || 0.5, 0.1), 1.0);
         const position = ['diagonal','center','top','bottom'].includes(req.body.position) ? req.body.position : 'diagonal';
-        await addWatermark(req.file.path, outputPath, req.body.text || 'CONFIDENTIAL', { fontSize, opacity, position });
+        const pagesStr = typeof req.body.pages === 'string' ? req.body.pages : '';
+        await addWatermark(req.file.path, outputPath, req.body.text || 'CONFIDENTIAL', { fontSize, opacity, position, pagesStr });
         handleDownloadAndCleanup(res, outputPath, req.file.path);
     } catch (e) { handleError(res, e, 'Watermark failed'); }
 };

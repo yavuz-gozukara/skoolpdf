@@ -4,6 +4,12 @@ import { UploadCloud, File, X, ArrowLeft, Send } from 'lucide-react';
 import { useTask } from '../context/TaskContext';
 import CustomPdfPreview from './CustomPdfPreview';
 
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 const ALL_DOCS        = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx';
 const ALL_IMAGES      = '.jpg,.jpeg,.png,.webp,.gif,.tiff';
 const OFFICE_ONLY     = '.doc,.docx,.ppt,.pptx,.xls,.xlsx';
@@ -139,7 +145,10 @@ export default function DropZone({ onContinue }) {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-3 overflow-hidden">
                         <File size={22} className="text-brand-500 dark:text-brand-400 shrink-0"/>
-                        <span className="truncate text-slate-700 dark:text-slate-200 font-medium">{f.name}</span>
+                        <div className="min-w-0">
+                          <p className="truncate text-slate-700 dark:text-slate-200 font-medium">{f.name}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{formatSize(f.size)}</p>
+                        </div>
                       </div>
                       <button onClick={e => { e.stopPropagation(); removeFile(i); }}
                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">

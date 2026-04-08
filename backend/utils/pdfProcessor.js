@@ -71,19 +71,38 @@ async function splitPdf(inputPath, outputPath, rangesStr) {
     return outputPath;
 }
 
+function parsePageRangesForWatermark(str, totalPages) {
+    const indices = new Set();
+    str.split(',').forEach(part => {
+        const m = part.trim().match(/^(\d+)(?:[–\-](\d+))?$/);
+        if (!m) return;
+        const from = parseInt(m[1]);
+        const to   = m[2] ? parseInt(m[2]) : from;
+        for (let p = Math.max(1, from); p <= Math.min(totalPages, to); p++) indices.add(p - 1); // 0-indexed
+    });
+    return indices;
+}
+
 async function addWatermark(inputPath, outputPath, text, options = {}) {
     const {
-        fontSize = 60,
-        opacity  = 0.5,
-        position = 'diagonal', // 'diagonal' | 'center' | 'top' | 'bottom'
-        color    = [0.8, 0.8, 0.8],
+        fontSize  = 60,
+        opacity   = 0.5,
+        position  = 'diagonal', // 'diagonal' | 'center' | 'top' | 'bottom'
+        color     = [0.8, 0.8, 0.8],
+        pagesStr  = '',          // e.g. "1, 3-5, 8" — empty means all pages
     } = options;
 
     const pdfBytes = fs.readFileSync(inputPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const pages = pdfDoc.getPages();
 
-    for (const page of pages) {
+    const targetIndices = pagesStr.trim()
+        ? parsePageRangesForWatermark(pagesStr, pages.length)
+        : null; // null = all pages
+
+    for (let i = 0; i < pages.length; i++) {
+        if (targetIndices && !targetIndices.has(i)) continue;
+        const page = pages[i];
         const { width, height } = page.getSize();
 
         // Estimate text width to center it

@@ -119,6 +119,7 @@ export default function ActionPanel({ onBack }) {
   const [watermarkSize, setWatermarkSize]       = useState('60');
   const [watermarkOpacity, setWatermarkOpacity] = useState('0.5');
   const [watermarkPosition, setWatermarkPosition] = useState('diagonal');
+  const [watermarkPages, setWatermarkPages]     = useState('');
   const [imageDpi, setImageDpi]           = useState('150');
   const [ocrProgress, setOcrProgress]     = useState(0);
   const pollRef = useRef(null);
@@ -181,6 +182,7 @@ export default function ActionPanel({ onBack }) {
             fd.append('fontSize', watermarkSize);
             fd.append('opacity', watermarkOpacity);
             fd.append('position', watermarkPosition);
+            fd.append('pages', watermarkPages.trim());
             endpoint = '/watermark'; break;
           case 'to-images': fd.append('dpi', imageDpi); endpoint = '/convert/to-images'; outputExt = '.zip'; break;
           case 'convert':
@@ -285,6 +287,18 @@ export default function ActionPanel({ onBack }) {
                 <option value="top">Top</option>
                 <option value="bottom">Bottom</option>
               </select>
+            </div>
+            <div>
+              <label htmlFor="watermark-pages" className={labelCls}>Apply to pages</label>
+              <input
+                id="watermark-pages"
+                type="text"
+                value={watermarkPages}
+                onChange={e => setWatermarkPages(e.target.value)}
+                placeholder="e.g. 1, 3–5, 8  (leave empty for all pages)"
+                className={`${inputCls} font-mono text-sm`}
+              />
+              <p className={hintCls}>Leave empty to stamp all pages. Use ranges like 1–3, 5, 8–10.</p>
             </div>
           </div>
         )}

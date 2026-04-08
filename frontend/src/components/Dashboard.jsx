@@ -1,4 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, X, FileText, ArrowDown } from 'lucide-react';
 import { useTask } from '../context/TaskContext';
@@ -86,8 +92,8 @@ function HeroDrop({ heroFile, onFileDrop, onClear }) {
                   <p className="font-semibold text-slate-800 dark:text-slate-100 truncate">
                     {heroFile.name}
                   </p>
-                  <p className="text-xs text-brand-600 dark:text-brand-400 font-medium mt-0.5">
-                    {t('hero_ready')}
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                    {formatSize(heroFile.size)} · <span className="text-brand-600 dark:text-brand-400 font-medium">{t('hero_ready')}</span>
                   </p>
                 </div>
               </div>

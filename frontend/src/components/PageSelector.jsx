@@ -4,10 +4,40 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
+/* ─── Helpers ──────────────────────────────────────────────────────────────── */
+function parseRanges(str, maxPage) {
+  const pages = new Set();
+  str.split(',').forEach(part => {
+    const m = part.trim().match(/^(\d+)(?:-(\d+))?$/);
+    if (!m) return;
+    const from = parseInt(m[1]);
+    const to   = m[2] ? parseInt(m[2]) : from;
+    for (let p = Math.max(1, from); p <= Math.min(maxPage, to); p++) pages.add(p);
+  });
+  return [...pages].sort((a, b) => a - b);
+}
+
+function pagesToRangeStr(pages) {
+  if (!pages.length) return '';
+  const sorted = [...pages].sort((a, b) => a - b);
+  const ranges = [];
+  let start = sorted[0], end = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === end + 1) { end = sorted[i]; }
+    else { ranges.push(start === end ? `${start}` : `${start}–${end}`); start = end = sorted[i]; }
+  }
+  ranges.push(start === end ? `${start}` : `${start}–${end}`);
+  return ranges.join(', ');
+}
+
+/* ─── Component ────────────────────────────────────────────────────────────── */
 export default function PageSelector({ file, selectedPages, onSelectionChange }) {
-  const [pdfDoc, setPdfDoc]   = useState(null);
-  const [pages, setPages]     = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pdfDoc, setPdfDoc]       = useState(null);
+  const [pages, setPages]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [inputVal, setInputVal]   = useState('');
+  const [inputError, setInputError] = useState(false);
+  const isUserTyping = useRef(false);
 
   useEffect(() => {
     let active = true, docInstance = null;
@@ -27,13 +57,46 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
     return () => { active = false; docInstance?.destroy(); };
   }, [file]);
 
+  // Sync text input when selection changes from outside (thumbnail clicks, Select All)
+  useEffect(() => {
+    if (!isUserTyping.current) {
+      setInputVal(pagesToRangeStr(selectedPages));
+      setInputError(false);
+    }
+  }, [selectedPages]);
+
   const toggle = (p) =>
     onSelectionChange(selectedPages.includes(p)
       ? selectedPages.filter(x => x !== p)
-      : [...selectedPages, p].sort((a,b) => a-b));
+      : [...selectedPages, p].sort((a, b) => a - b));
 
   const toggleAll = () =>
     onSelectionChange(selectedPages.length === pages.length ? [] : [...pages]);
+
+  const handleInputChange = (e) => {
+    isUserTyping.current = true;
+    setInputVal(e.target.value);
+    setInputError(false);
+  };
+
+  const applyInput = () => {
+    isUserTyping.current = false;
+    const val = inputVal.trim();
+    if (!val) { onSelectionChange([]); setInputError(false); return; }
+    const parsed = parseRanges(val, pages.length);
+    if (parsed.length === 0 && val !== '') {
+      setInputError(true);
+    } else {
+      setInputError(false);
+      onSelectionChange(parsed);
+      setInputVal(pagesToRangeStr(parsed)); // normalise display
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); applyInput(); }
+    if (e.key === 'Escape') { isUserTyping.current = false; setInputVal(pagesToRangeStr(selectedPages)); setInputError(false); }
+  };
 
   if (loading) return (
     <div className="p-12 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center">
@@ -45,9 +108,11 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
 
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-4 gap-2">
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-3 gap-2">
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">
           Select pages to include
+          <span className="ml-2 text-xs font-normal text-slate-400 dark:text-slate-500">({pages.length} total)</span>
         </label>
         <button
           onClick={toggleAll}
@@ -60,6 +125,39 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
         </button>
       </div>
 
+      {/* Manual range input */}
+      <div className="mb-3">
+        <div className="relative">
+          <input
+            type="text"
+            value={inputVal}
+            onChange={handleInputChange}
+            onBlur={applyInput}
+            onKeyDown={handleKeyDown}
+            placeholder={`e.g. 1, 3–5, 8  (1–${pages.length})`}
+            className={`w-full px-4 py-2.5 rounded-xl text-sm font-mono
+              bg-white dark:bg-slate-700/60
+              border transition-all
+              text-slate-800 dark:text-slate-100
+              placeholder-slate-400 dark:placeholder-slate-500
+              focus:ring-2 focus:outline-none
+              ${inputError
+                ? 'border-red-400 dark:border-red-500 focus:ring-red-400/30 focus:border-red-500'
+                : 'border-slate-200 dark:border-slate-600 focus:ring-brand-500/30 focus:border-brand-500 dark:focus:border-brand-400'
+              }`}
+          />
+          {inputError && (
+            <p className="mt-1 text-xs text-red-500 dark:text-red-400">
+              Invalid page range. Use format: 1, 3–5, 8
+            </p>
+          )}
+        </div>
+        <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500 italic">
+          Type page numbers or ranges, then press Enter — or click thumbnails below.
+        </p>
+      </div>
+
+      {/* Thumbnail grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto p-3 sm:p-4
                       bg-slate-50 dark:bg-slate-800/50 shadow-inner rounded-xl
                       border border-slate-200 dark:border-slate-700 overscroll-contain">
