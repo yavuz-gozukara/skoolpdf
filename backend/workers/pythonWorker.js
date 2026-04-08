@@ -6,9 +6,12 @@ function convertToDocx(inputPath, outputPath) {
     const absInput  = path.resolve(inputPath);
     const absOutput = path.resolve(outputPath);
 
-    // Dev: use local venv if present; Production (Docker): use system pdf2docx
-    const venvBin = path.join(__dirname, '..', 'venv', 'bin', 'pdf2docx');
-    const bin     = fs.existsSync(venvBin) ? venvBin : 'pdf2docx';
+    // Dev: use local venv if present; Production (Docker): resolve full path
+    const venvBin    = path.join(__dirname, '..', 'venv', 'bin', 'pdf2docx');
+    const systemBins = ['/usr/local/bin/pdf2docx', '/usr/bin/pdf2docx'];
+    const bin        = fs.existsSync(venvBin)
+        ? venvBin
+        : systemBins.find(p => fs.existsSync(p)) || 'pdf2docx';
 
     return new Promise((resolve, reject) => {
         execFile(bin, ['convert', absInput, absOutput], (error, _stdout, stderr) => {

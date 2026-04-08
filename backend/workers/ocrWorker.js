@@ -1,4 +1,9 @@
 const { execFile } = require('child_process');
+const fs = require('fs');
+
+// pip installs binaries to /usr/local/bin on Debian/Docker
+const OCR_BIN = ['/usr/local/bin/ocrmypdf', '/usr/bin/ocrmypdf']
+    .find(p => { try { return fs.existsSync(p); } catch { return false; } }) || 'ocrmypdf';
 
 const ALLOWED_LANGS = new Set(['eng', 'tur', 'deu', 'fra', 'spa', 'por', 'ita', 'rus', 'chi_sim', 'chi_tra', 'jpn', 'kor', 'ara']);
 
@@ -20,7 +25,7 @@ function processOcrFile(inputPath, outputPath, language = 'eng') {
     ];
 
     return new Promise((resolve, reject) => {
-        execFile('ocrmypdf', args, { timeout: 600_000 }, (error, _stdout, stderr) => {
+        execFile(OCR_BIN, args, { timeout: 600_000 }, (error, _stdout, stderr) => {
             if (error) {
                 console.error('OCR Error:', error.message);
                 if (
