@@ -1,24 +1,19 @@
 const { execFile } = require('child_process');
 
-const ALLOWED_LANG_PARTS = new Set(['eng', 'tur', 'deu', 'fra', 'spa', 'por', 'ita', 'rus', 'chi_sim', 'chi_tra', 'jpn', 'kor', 'ara']);
-
 // Extend PATH so execFile can find pip-installed binaries in Docker
 const ENV = {
     ...process.env,
     PATH: `/usr/local/bin:/usr/bin:/bin:${process.env.PATH || ''}`,
 };
 
-function processOcrFile(inputPath, outputPath, language = 'tur+eng') {
-    // Allow combined langs like "tur+eng" — validate each part
-    const parts = language.split('+');
-    const lang  = parts.every(p => ALLOWED_LANG_PARTS.has(p)) ? language : 'tur+eng';
-
+function processOcrFile(inputPath, outputPath) {
     const args = [
-        '--redo-ocr',
-        '--optimize', '0',
+        '--redo-ocr',         // Re-OCR pages that have an existing (often bad) OCR layer; skip native-text pages
+        '--rotate-pages',     // Auto-correct grossly rotated pages (90°, 180°, etc.)
+        '--optimize', '1',    // Lossless PDF optimization — reduces size without touching image quality
         '--output-type', 'pdf',
-        '--jobs', '1',
-        '-l', lang,
+        '--jobs', '1',        // Keep memory footprint low
+        '-l', 'tur+eng',      // Turkish + English (covers all expected documents)
         inputPath,
         outputPath,
     ];

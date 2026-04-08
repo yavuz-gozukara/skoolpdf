@@ -92,9 +92,7 @@ const processCompress = async (req, res) => {
 const processOcr = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'File missing' });
-        const language = req.body.language || 'eng+tur';
-        const jobId = `ocr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        const intermediatePath = path.join(__dirname, '..', 'uploads', `ocr-raw-${jobId}.pdf`);
+        const jobId    = `ocr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         const finalPath = path.join(__dirname, '..', 'uploads', `ocr-final-${jobId}.pdf`);
 
         jobs.set(jobId, {
@@ -108,7 +106,7 @@ const processOcr = async (req, res) => {
         // Return jobId immediately so frontend can start polling
         res.json({ jobId });
 
-        // Run OCR + compression in background (fire-and-forget)
+        // Run OCR in background — ocrmypdf --optimize 1 handles lossless compression internally
         ;(async () => {
             const setProgress = (p) => {
                 const job = jobs.get(jobId);
@@ -117,20 +115,13 @@ const processOcr = async (req, res) => {
             try {
                 setProgress(15);
                 console.log(`[skoolPDF] OCR Job ${jobId}: Starting OCR...`);
-                await processOcrFile(req.file.path, intermediatePath, language);
-
-                setProgress(70);
-                console.log(`[skoolPDF] OCR Job ${jobId}: Applying compression...`);
-                await compressPdf(intermediatePath, finalPath, 'ebook');
-
-                if (fs.existsSync(intermediatePath)) fs.unlinkSync(intermediatePath);
+                await processOcrFile(req.file.path, finalPath);
 
                 setProgress(100);
                 const job = jobs.get(jobId);
                 if (job) jobs.set(jobId, { ...job, status: 'done', progress: 100 });
                 console.log(`[skoolPDF] OCR Job ${jobId}: Complete.`);
             } catch (e) {
-                if (fs.existsSync(intermediatePath)) fs.unlinkSync(intermediatePath);
                 if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
                 const job = jobs.get(jobId);
                 if (job) {

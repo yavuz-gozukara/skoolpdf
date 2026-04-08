@@ -52,16 +52,17 @@ export default function PageSelector({ file, selectedPages, onSelectionChange })
         <button
           onClick={toggleAll}
           className="text-sm font-medium text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300
-                     px-3 py-2 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50
-                     rounded-lg transition-colors shrink-0 min-h-[40px] touch-manipulation"
+                     px-4 py-2.5 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50
+                     rounded-lg transition-colors shrink-0 min-h-[44px] touch-manipulation
+                     focus-visible:outline-2 focus-visible:outline-brand-500"
         >
           {selectedPages.length === pages.length ? 'Deselect All' : 'Select All'}
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 max-h-[480px] overflow-y-auto p-3 sm:p-4
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto p-3 sm:p-4
                       bg-slate-50 dark:bg-slate-800/50 shadow-inner rounded-xl
-                      border border-slate-200 dark:border-slate-700">
+                      border border-slate-200 dark:border-slate-700 overscroll-contain">
         {pages.map(p => (
           <Thumbnail key={p} pdfDoc={pdfDoc} pageNum={p} isSelected={selectedPages.includes(p)} onToggle={() => toggle(p)} />
         ))}
@@ -103,11 +104,14 @@ function Thumbnail({ pdfDoc, pageNum, isSelected, onToggle }) {
   return (
     <div
       onClick={onToggle}
+      onKeyDown={e => (e.key === ' ' || e.key === 'Enter') && onToggle()}
       role="checkbox"
+      tabIndex={0}
       aria-checked={isSelected}
       aria-label={`Page ${pageNum}`}
       className={`relative cursor-pointer transition-all duration-200 rounded-xl overflow-hidden
-                  bg-white dark:bg-slate-700 touch-manipulation
+                  bg-white dark:bg-slate-700 touch-manipulation select-none
+                  focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2
                   ${isSelected
                     ? 'border-4 border-brand-500 shadow-md ring-2 ring-brand-400/30 scale-[1.02]'
                     : 'border-2 border-transparent hover:border-slate-300 dark:hover:border-slate-500 shadow-sm active:scale-[0.97]'}`}
