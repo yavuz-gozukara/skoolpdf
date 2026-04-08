@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
+const { exec, execFile } = require('child_process');
 const supabase = require('../supabaseClient');
 const { mergePdfs, splitPdf, addWatermark } = require('../utils/pdfProcessor');
 const { compressPdf, convertToImages } = require('../workers/ghostscriptWorker');
@@ -185,8 +185,18 @@ const downloadOcrResult = (req, res) => {
     if (job.status !== 'done') return res.status(409).json({ error: 'Job not ready', status: job.status });
 
     const { outputPath, inputPath } = job;
-    jobs.delete(req.params.jobId); // Remove before download to prevent double-download
-    handleDownloadAndCleanup(res, outputPath, inputPath);
+    const filename = path.basename(outputPath);
+    res.download(outputPath, filename, (err) => {
+        // Only delete after download completes
+        jobs.delete(req.params.jobId);
+        const cleanup = (fp) => { if (fp && fs.existsSync(fp)) fs.unlinkSync(fp); };
+        if (!err) {
+            cleanup(inputPath);
+            cleanup(outputPath);
+        } else {
+            console.error('OCR download failed:', err);
+        }
+    });
 };
 
 // ─── Other controllers ─────────────────────────────────────────────────────────
@@ -261,10 +271,10 @@ const processToImages = async (req, res) => {
 
         // Multi-page → zip all images and return the archive
         const zipPath = path.join(uploadsDir, `images-${Date.now()}.zip`);
-        const quoted = imageFiles.map(f => `"${f}"`).join(' ');
 
         await new Promise((resolve, reject) => {
-            exec(`zip -j "${zipPath}" ${quoted}`, (err) => {
+            const args = ['-j', zipPath, ...imageFiles];
+            execFile('zip', args, (err) => {
                 if (err) return reject(err);
                 resolve();
             });
@@ -281,10 +291,24 @@ const processConvertToPdf = async (req, res) => {
         if (req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/png') {
             const outputPath = path.join(__dirname, '..', 'uploads', `converted-${Date.now()}.pdf`);
             await mergePdfs([req.file.path], outputPath);
+            await logPdfJob({
+                operation: 'convert-to-pdf',
+                originalName: req.file.originalname,
+                outputName: path.basename(outputPath),
+                status: 'done',
+                metadata: { sourceType: 'image', format: req.file.mimetype },
+            });
             return handleDownloadAndCleanup(res, outputPath, req.file.path);
         }
         const outputDir = path.join(__dirname, '..', 'uploads');
         const outputPath = await convertToPdf(req.file.path, outputDir);
+        await logPdfJob({
+            operation: 'convert-to-pdf',
+            originalName: req.file.originalname,
+            outputName: path.basename(outputPath),
+            status: 'done',
+            metadata: { sourceType: 'document' },
+        });
         handleDownloadAndCleanup(res, outputPath, req.file.path);
     } catch (e) { handleError(res, e, 'Conversion failed'); }
 };
