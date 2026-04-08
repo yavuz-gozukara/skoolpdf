@@ -14,9 +14,7 @@ function processOcrFile(inputPath, outputPath, language = 'tur+eng') {
     const lang  = parts.every(p => ALLOWED_LANG_PARTS.has(p)) ? language : 'tur+eng';
 
     const args = [
-        '--force-ocr',
-        '--deskew',
-        '--rotate-pages',
+        '--redo-ocr',
         '--optimize', '0',
         '--output-type', 'pdf',
         '--jobs', '1',
