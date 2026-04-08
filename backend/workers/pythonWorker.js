@@ -2,6 +2,11 @@ const { execFile } = require('child_process');
 const path = require('path');
 const fs   = require('fs');
 
+const ENV = {
+    ...process.env,
+    PATH: `/usr/local/bin:/usr/bin:/bin:${process.env.PATH || ''}`,
+};
+
 function convertToDocx(inputPath, outputPath) {
     const absInput  = path.resolve(inputPath);
     const absOutput = path.resolve(outputPath);
@@ -14,7 +19,7 @@ function convertToDocx(inputPath, outputPath) {
         : systemBins.find(p => fs.existsSync(p)) || 'pdf2docx';
 
     return new Promise((resolve, reject) => {
-        execFile(bin, ['convert', absInput, absOutput], (error, _stdout, stderr) => {
+        execFile(bin, ['convert', absInput, absOutput], { env: ENV }, (error, _stdout, stderr) => {
             if (error) {
                 console.error('pdf2docx error:', error.message);
                 if (
