@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileStack, Shield, Trash2, Lock, Zap, Moon, Sun } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Dashboard from './components/Dashboard';
 import { TaskProvider, useTask } from './context/TaskContext';
 import { LanguageProvider, useLang } from './context/LanguageContext';
@@ -158,6 +159,7 @@ export default function App() {
     <LanguageProvider>
       <TaskProvider>
         <AppContent />
+        <SpeedInsights />
       </TaskProvider>
     </LanguageProvider>
   );
