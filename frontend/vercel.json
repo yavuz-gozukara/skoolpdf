@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://skoolpdf-production-8bec.up.railway.app/api/:path*"
+    }
+  ]
+}
